@@ -1,0 +1,4 @@
+(executable
+ (public_name mlang)
+ (name main)
+ (libraries mlang))
