@@ -144,7 +144,7 @@ end = struct
     | TyPair (tau1, tau2) ->
         ps "(" ;
         pp_type tau1 ;
-        ps " , " ;
+        ps ", " ;
         pp_type tau2 ;
         ps ")"
     | TyLoc tau1 ->
