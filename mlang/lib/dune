@@ -1,2 +1,7 @@
+(env (dev (flags -w -32-34-27)))
+
+(ocamlyacc parser)
+(ocamllex lexer)
+
 (library
  (name mlang))
