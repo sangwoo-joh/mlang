@@ -1,6 +1,6 @@
 (** SNU 4190.310 Programming Languages *)
 
-(* Definition of M's syntax, type and interpreter *)
+(** Definition of M's syntax, type and interpreter *)
 module M : sig
   type exp =
     | CONST of const
@@ -12,37 +12,37 @@ module M : sig
     | BOP of bop * exp * exp
     | READ
     | WRITE of exp
-    | MALLOC of exp (*   malloc e *)
-    | ASSIGN of exp * exp (*   e := e   *)
-    | BANG of exp (*   !e       *)
-    | SEQ of exp * exp (*   e ; e    *)
-    | PAIR of exp * exp (*   (e, e)   *)
-    | FST of exp (*   e.1      *)
+    | MALLOC of exp  (** malloc e *)
+    | ASSIGN of exp * exp  (** e := e *)
+    | BANG of exp  (** !e *)
+    | SEQ of exp * exp  (** e ; e *)
+    | PAIR of exp * exp  (** (e, e) *)
+    | FST of exp  (** e.1 *)
     | SND of exp
 
-  (*   e.2      *)
+  (** e.2 *)
   and const = S of string | N of int | B of bool
 
   and id = string
 
   and decl =
-    | REC of id * id * exp (* Recursive function decl. (fun_id, arg_id, body) *)
+    | REC of id * id * exp  (** Recursive function decl. (fun_id, arg_id, body) *)
     | VAL of id * exp
 
-  (* Value decl, including non-recursive functions *)
+  (** Value decl, including non-recursive functions *)
   and bop = ADD | SUB | EQ | AND | OR
 
-  (* type in M  *)
+  (** type in M  *)
   type typ =
-    | TyInt (* integer type *)
-    | TyBool (* boolean type *)
-    | TyString (* string type *)
-    | TyPair of typ * typ (* pair type *)
+    | TyInt  (** integer type *)
+    | TyBool  (** boolean type *)
+    | TyString  (** string type *)
+    | TyPair of typ * typ  (** pair type *)
     | TyLoc of typ
 
-  (* location type *)
+  (** location type *)
 
-  (* errors *)
+  (** errors *)
   exception RunError of string
 
   exception TypeError of string
@@ -59,42 +59,42 @@ end = struct
     | BOP of bop * exp * exp
     | READ
     | WRITE of exp
-    | MALLOC of exp (*   malloc e *)
-    | ASSIGN of exp * exp (*   e := e   *)
-    | BANG of exp (*   !e       *)
-    | SEQ of exp * exp (*   e ; e    *)
-    | PAIR of exp * exp (*   (e, e)   *)
-    | FST of exp (*   e.1      *)
+    | MALLOC of exp  (**   malloc e *)
+    | ASSIGN of exp * exp  (**   e := e   *)
+    | BANG of exp  (**   !e       *)
+    | SEQ of exp * exp  (**   e ; e    *)
+    | PAIR of exp * exp  (**   (e, e)   *)
+    | FST of exp  (**   e.1      *)
     | SND of exp
 
-  (*   e.2      *)
+  (**   e.2      *)
   and const = S of string | N of int | B of bool
 
   and id = string
 
   and decl =
-    | REC of id * id * exp (* Recursive function decl. (fun_id, arg_id, body) *)
+    | REC of id * id * exp  (** Recursive function decl. (fun_id, arg_id, body) *)
     | VAL of id * exp
 
-  (* Value decl, including non-recursive functions *)
+  (** Value decl, including non-recursive functions *)
   and bop = ADD | SUB | EQ | AND | OR
 
-  (* type in M  *)
+  (** type in M  *)
   type typ =
-    | TyInt (* integer type *)
-    | TyBool (* boolean type *)
-    | TyString (* string type *)
-    | TyPair of typ * typ (* pair type *)
+    | TyInt  (** integer type *)
+    | TyBool  (** boolean type *)
+    | TyString  (** string type *)
+    | TyPair of typ * typ  (** pair type *)
     | TyLoc of typ
 
-  (* location type *)
+  (** location type *)
 
-  (* errors *)
+  (** errors *)
   exception RunError of string
 
   exception TypeError of string
 
-  (* domains *)
+  (** domains *)
   type loc = int
 
   type value =
@@ -113,8 +113,8 @@ end = struct
 
   type memory = int * (loc -> value)
 
-  (* notations (see 5 page in M.pdf) *)
-  (* f @+ (x, v)              f[x |-> v]
+  (** notations (see 5 page in M.pdf)
+   * f @+ (x, v)              f[x |-> v]
    * store M (l, v)           M[l |-> v]
    * load M l                M(l)
    *)
@@ -133,7 +133,7 @@ end = struct
     (!loc_count, m)
 
 
-  (* auxiliary functions *)
+  (** auxiliary functions *)
   let getInt = function Int n -> n | _ -> raise (TypeError "not an int")
 
   let getString = function String s -> s | _ -> raise (TypeError "not a string")
