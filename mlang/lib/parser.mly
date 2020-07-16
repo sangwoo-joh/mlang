@@ -4,12 +4,12 @@
 exception EmptyBinding
 let rec desugarLet =
   function ([], e) -> raise EmptyBinding
-   | (a::[], e) -> M.LET(a,e)
-   | (a::r, e) -> M.LET(a, desugarLet(r,e))
+   | (a::[], e) -> M.Let(a,e)
+   | (a::r, e) -> M.Let(a, desugarLet(r,e))
 
 exception IncorrectSelection
-let whichSel = function (e, 1) -> M.FST e
-       | (e, 2) -> M.SND e
+let whichSel = function (e, 1) -> M.Fst e
+       | (e, 2) -> M.Snd e
        | _ -> raise IncorrectSelection
 %}
 %token TRUE FALSE AND OR IF THEN ELSE LET IN END FN READ WRITE RARROW EQUAL
@@ -39,35 +39,35 @@ let whichSel = function (e, 1) -> M.FST e
 program: expr EOF   {$1}
     ;
 expr: aexpr {$1}
-    | expr aexpr {M.APP($1,$2)}
-    | expr PLUS expr {M.BOP(M.ADD,$1,$3)}
-    | expr MINUS expr {M.BOP(M.SUB,$1,$3)}
-    | expr EQUAL expr {M.BOP(M.EQ,$1,$3)}
-    | expr AND expr {M.BOP(M.AND,$1,$3)}
-    | expr OR expr {M.BOP(M.OR,$1,$3)}
-    | expr SEMICOLON expr {M.SEQ ($1,$3)}
-    | expr COLONEQ expr {M.ASSIGN($1,$3)}
+    | expr aexpr {M.App($1,$2)}
+    | expr PLUS expr {M.Bop(M.Add,$1,$3)}
+    | expr MINUS expr {M.Bop(M.Sub,$1,$3)}
+    | expr EQUAL expr {M.Bop(M.Eq,$1,$3)}
+    | expr AND expr {M.Bop(M.And,$1,$3)}
+    | expr OR expr {M.Bop(M.Or,$1,$3)}
+    | expr SEMICOLON expr {M.Seq ($1,$3)}
+    | expr COLONEQ expr {M.Assign($1,$3)}
     | expr DOT NUM {whichSel ($1,$3)}
     ;
 aexpr: LP expr RP {$2}
-    | NUM {M.CONST(M.N $1)}
-    | STRING {M.CONST(M.S $1)}
-    | TRUE {M.CONST(M.B true)}
-    | FALSE {M.CONST(M.B false)}
-    | ID {M.VAR($1)}
-    | READ {M.READ}
-    | FN ID RARROW expr {M.FN($2,$4)}
+    | NUM {M.Const(M.Nat $1)}
+    | STRING {M.Const(M.Str $1)}
+    | TRUE {M.Const(M.Bool true)}
+    | FALSE {M.Const(M.Bool false)}
+    | ID {M.Var($1)}
+    | READ {M.Read}
+    | FN ID RARROW expr {M.Fn($2,$4)}
     | LET decls IN expr END {desugarLet($2,$4)}
-    | IF expr THEN expr ELSE expr {M.IF($2,$4,$6)}
-    | WRITE expr {M.WRITE ($2)}
-    | MALLOC expr {M.MALLOC ($2)}
-    | BANG expr {M.BANG ($2)}
-    | LP expr COMMA expr RP {M.PAIR ($2,$4)}
+    | IF expr THEN expr ELSE expr {M.If($2,$4,$6)}
+    | WRITE expr {M.Write ($2)}
+    | MALLOC expr {M.Malloc ($2)}
+    | BANG expr {M.Bang ($2)}
+    | LP expr COMMA expr RP {M.Pair ($2,$4)}
     ;
 decls: decl {[$1]}
     | decls decl {$1 @ [$2]}
     ;
-decl: VAL ID EQUAL expr {M.VAL($2, $4)}
-    | REC ID EQUAL FN ID RARROW expr {M.REC($2, $5, $7)}
+decl: VAL ID EQUAL expr {M.Val($2, $4)}
+    | REC ID EQUAL FN ID RARROW expr {M.Rec($2, $5, $7)}
     ;
 %%

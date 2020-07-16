@@ -24,29 +24,29 @@ end = struct
 
 
   let rec pp n = function
-    | CONST (S s) ->
+    | Const (Str s) ->
         ps s
-    | CONST (N m) ->
+    | Const (Nat m) ->
         print_int m
-    | CONST (B true) ->
+    | Const (Bool true) ->
         ps "true"
-    | CONST (B false) ->
+    | Const (Bool false) ->
         ps "false"
-    | VAR s ->
+    | Var s ->
         ps s
-    | FN (x, e) -> (
+    | Fn (x, e) -> (
         ps ("fn " ^ x ^ " -> ") ;
         match e with
-        | FN _ ->
+        | Fn _ ->
             pp (n + 1) e
         | _ ->
             indent (n + 1) ;
             pp (n + 1) e )
-    | APP (e, e') ->
+    | App (e, e') ->
         pp n e ;
         ps " " ;
         pp n e'
-    | IF (e1, e2, e3) ->
+    | If (e1, e2, e3) ->
         ps "if " ;
         pp n e1 ;
         ps " then " ;
@@ -56,23 +56,23 @@ end = struct
         ps "else" ;
         indent (n + 1) ;
         pp (n + 1) e3
-    | READ ->
+    | Read ->
         ps "read "
-    | WRITE e ->
+    | Write e ->
         ps "write(" ;
         pp n e ;
         ps ")"
-    | LET (d, e) ->
+    | Let (d, e) ->
         let rec sugaring l acc =
           match l with
-          | LET (d, LET (d', e)) ->
-              sugaring (LET (d', e)) (d :: acc)
-          | LET (d, e) ->
+          | Let (d, Let (d', e)) ->
+              sugaring (Let (d', e)) (d :: acc)
+          | Let (d, e) ->
               (List.rev (d :: acc), e)
           | _ ->
               raise (Invalid_argument "impossible")
         in
-        let decls, body = sugaring (LET (d, e)) [] in
+        let decls, body = sugaring (Let (d, e)) [] in
         ps "let " ;
         List.iter
           (fun x ->
@@ -85,36 +85,36 @@ end = struct
         pp (n + 1) body ;
         indent n ;
         ps "end"
-    | MALLOC e ->
+    | Malloc e ->
         ps "malloc " ;
         pp (n + 1) e
-    | ASSIGN (e, e') ->
+    | Assign (e, e') ->
         pp n e ;
         ps " := " ;
         pp n e'
-    | BANG e ->
+    | Bang e ->
         ps "!" ;
         pp n e
-    | SEQ (e, e') ->
+    | Seq (e, e') ->
         pp n e ;
         ps ";" ;
         indent n ;
         pp n e'
-    | PAIR (e1, e2) ->
+    | Pair (e1, e2) ->
         ps "(" ;
         pp n e1 ;
         ps ", " ;
         pp n e2 ;
         ps ")"
-    | FST e ->
+    | Fst e ->
         pp n e ;
         ps ".1"
-    | SND e ->
+    | Snd e ->
         pp n e ;
         ps ".2"
-    | BOP (op, e1, e2) ->
+    | Bop (op, e1, e2) ->
         let op_str =
-          match op with ADD -> "+" | SUB -> "-" | EQ -> "=" | AND -> "and" | OR -> "or"
+          match op with Add -> "+" | Sub -> "-" | Eq -> "=" | And -> "and" | Or -> "or"
         in
         ps "(" ;
         pp n e1 ;
@@ -124,30 +124,30 @@ end = struct
 
 
   and printDecl n = function
-    | VAL (x, e) ->
+    | Val (x, e) ->
         ps "val " ;
         ps (x ^ " = ") ;
         pp (n + 1) e
-    | REC (f, x, e) ->
+    | Rec (f, x, e) ->
         ps ("rec " ^ f ^ "(" ^ x ^ ") = ") ;
         pp (n + 1) e
 
 
   let rec pp_type ty =
     match ty with
-    | TyInt ->
+    | TInt ->
         ps "int"
-    | TyBool ->
+    | TBool ->
         ps "bool"
-    | TyString ->
+    | TString ->
         ps "string"
-    | TyPair (tau1, tau2) ->
+    | TPair (tau1, tau2) ->
         ps "(" ;
         pp_type tau1 ;
         ps ", " ;
         pp_type tau2 ;
         ps ")"
-    | TyLoc tau1 ->
+    | TLoc tau1 ->
         ps "loc (" ;
         pp_type tau1 ;
         ps ")"

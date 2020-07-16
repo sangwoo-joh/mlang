@@ -2,42 +2,40 @@
 
 (** Definition of M's syntax, type and interpreter *)
 type exp =
-  | CONST of const
-  | VAR of id
-  | FN of id * exp
-  | APP of exp * exp
-  | LET of decl * exp
-  | IF of exp * exp * exp
-  | BOP of bop * exp * exp
-  | READ
-  | WRITE of exp
-  | MALLOC of exp  (**   malloc e *)
-  | ASSIGN of exp * exp  (**   e := e   *)
-  | BANG of exp  (**   !e       *)
-  | SEQ of exp * exp  (**   e ; e    *)
-  | PAIR of exp * exp  (**   (e, e)   *)
-  | FST of exp  (**   e.1      *)
-  | SND of exp
+  | Const of const
+  | Var of id
+  | Fn of id * exp
+  | App of exp * exp
+  | Let of decl * exp
+  | If of exp * exp * exp
+  | Bop of bop * exp * exp
+  | Read
+  | Write of exp
+  | Malloc of exp
+  | Assign of exp * exp
+  | Bang of exp
+  | Seq of exp * exp
+  | Pair of exp * exp
+  | Fst of exp
+  | Snd of exp
 
-(**   e.2      *)
-and const = S of string | N of int | B of bool
+and const = Str of string | Nat of int | Bool of bool
 
 and id = string
 
 and decl =
-  | REC of id * id * exp  (** Recursive function decl. (fun_id, arg_id, body) *)
-  | VAL of id * exp
+  | Rec of id * id * exp  (** Recursive function decl. (fun_id, arg_id, body) *)
+  | Val of id * exp  (** Value decl, including non-recursive functions *)
 
-(** Value decl, including non-recursive functions *)
-and bop = ADD | SUB | EQ | AND | OR
+and bop = Add | Sub | Eq | And | Or
 
 (** type in M  *)
 type typ =
-  | TyInt  (** integer type *)
-  | TyBool  (** boolean type *)
-  | TyString  (** string type *)
-  | TyPair of typ * typ  (** pair type *)
-  | TyLoc of typ
+  | TInt  (** integer type *)
+  | TBool  (** boolean type *)
+  | TString  (** string type *)
+  | TPair of typ * typ  (** pair type *)
+  | TLoc of typ
 
 (** location type *)
 
@@ -50,12 +48,12 @@ exception TypeError of string
 type loc = int
 
 type value =
-  | Int of int
-  | String of string
-  | Bool of bool
-  | Loc of loc
-  | Pair of value * value
-  | Closure of closure
+  | VInt of int
+  | VString of string
+  | VBool of bool
+  | VLoc of loc
+  | VPair of value * value
+  | VClosure of closure
 
 and closure = fexpr * env
 
@@ -86,48 +84,48 @@ let malloc m =
 
 
 (** auxiliary functions *)
-let getInt = function Int n -> n | _ -> raise (TypeError "not an int")
+let getInt = function VInt n -> n | _ -> raise (TypeError "not an int")
 
-let getString = function String s -> s | _ -> raise (TypeError "not a string")
+let getString = function VString s -> s | _ -> raise (TypeError "not a string")
 
-let getBool = function Bool b -> b | _ -> raise (TypeError "not a bool")
+let getBool = function VBool b -> b | _ -> raise (TypeError "not a bool")
 
-let getLoc = function Loc l -> l | _ -> raise (TypeError "not a loc")
+let getLoc = function VLoc l -> l | _ -> raise (TypeError "not a loc")
 
-let getPair = function Pair (a, b) -> (a, b) | _ -> raise (TypeError "not a pair")
+let getPair = function VPair (a, b) -> (a, b) | _ -> raise (TypeError "not a pair")
 
-let getClosure = function Closure c -> c | _ -> raise (TypeError "not a function")
+let getClosure = function VClosure c -> c | _ -> raise (TypeError "not a function")
 
 let op2fn = function
-  | ADD ->
-      fun (v1, v2) -> Int (getInt v1 + getInt v2)
-  | SUB ->
-      fun (v1, v2) -> Int (getInt v1 - getInt v2)
-  | AND ->
-      fun (v1, v2) -> Bool (getBool v1 && getBool v2)
-  | OR ->
-      fun (v1, v2) -> Bool (getBool v1 || getBool v2)
-  | EQ -> (
+  | Add ->
+      fun (v1, v2) -> VInt (getInt v1 + getInt v2)
+  | Sub ->
+      fun (v1, v2) -> VInt (getInt v1 - getInt v2)
+  | And ->
+      fun (v1, v2) -> VBool (getBool v1 && getBool v2)
+  | Or ->
+      fun (v1, v2) -> VBool (getBool v1 || getBool v2)
+  | Eq -> (
       fun (v1, v2) ->
         match (v1, v2) with
-        | Int n1, Int n2 ->
-            Bool (n1 = n2)
-        | String s1, String s2 ->
-            Bool (s1 = s2)
-        | Bool b1, Bool b2 ->
-            Bool (b1 = b2)
-        | Loc l1, Loc l2 ->
-            Bool (l1 = l2)
+        | VInt n1, VInt n2 ->
+            VBool (n1 = n2)
+        | VString s1, VString s2 ->
+            VBool (s1 = s2)
+        | VBool b1, VBool b2 ->
+            VBool (b1 = b2)
+        | VLoc l1, VLoc l2 ->
+            VBool (l1 = l2)
         | _ ->
             raise (TypeError "EQ operands are not int/bool/str/loc") )
 
 
 let rec printValue = function
-  | Int n ->
+  | VInt n ->
       print_endline (string_of_int n)
-  | Bool b ->
+  | VBool b ->
       print_endline (string_of_bool b)
-  | String s ->
+  | VString s ->
       print_endline s
   | _ ->
       raise (TypeError "WRITE operand is not int/bool/string")
@@ -135,17 +133,17 @@ let rec printValue = function
 
 let rec eval env mem exp =
   match exp with
-  | CONST (S s) ->
-      (String s, mem)
-  | CONST (N n) ->
-      (Int n, mem)
-  | CONST (B b) ->
-      (Bool b, mem)
-  | VAR x ->
+  | Const (Str s) ->
+      (VString s, mem)
+  | Const (Nat n) ->
+      (VInt n, mem)
+  | Const (Bool b) ->
+      (VBool b, mem)
+  | Var x ->
       (env x, mem)
-  | FN (x, e) ->
-      (Closure (Fun (x, e), env), mem)
-  | APP (e1, e2) -> (
+  | Fn (x, e) ->
+      (VClosure (Fun (x, e), env), mem)
+  | App (e1, e2) -> (
       let v1, m' = eval env mem e1 in
       let v2, m'' = eval env m' e2 in
       let c, env' = getClosure v1 in
@@ -156,48 +154,48 @@ let rec eval env mem exp =
           let env'' = bind env' (x, v2) in
           let env''' = bind env'' (f, v1) in
           eval env''' m'' e )
-  | IF (e1, e2, e3) ->
+  | If (e1, e2, e3) ->
       let v1, m' = eval env mem e1 in
       eval env m' (if getBool v1 then e2 else e3)
-  | BOP (op, e1, e2) ->
+  | Bop (op, e1, e2) ->
       let v1, m' = eval env mem e1 in
       let v2, m'' = eval env m' e2 in
       ((op2fn op) (v1, v2), m'')
-  | READ ->
+  | Read ->
       let n = try read_int () with _ -> raise (RunError "read error") in
-      (Int n, mem)
-  | WRITE e ->
+      (VInt n, mem)
+  | Write e ->
       let v, m' = eval env mem e in
       let _ = printValue v in
       (v, m')
-  | PAIR (e1, e2) ->
+  | Pair (e1, e2) ->
       let v1, m' = eval env mem e1 in
       let v2, m'' = eval env m' e2 in
-      (Pair (v1, v2), m'')
-  | FST e ->
+      (VPair (v1, v2), m'')
+  | Fst e ->
       let v, m' = eval env mem e in
       (fst (getPair v), m')
-  | SND e ->
+  | Snd e ->
       let v, m' = eval env mem e in
       (snd (getPair v), m')
-  | SEQ (e1, e2) ->
+  | Seq (e1, e2) ->
       let v, m' = eval env mem e1 in
       eval env m' e2
-  | LET (VAL (x, e1), e2) ->
+  | Let (Val (x, e1), e2) ->
       let v1, m' = eval env mem e1 in
       eval (bind env (x, v1)) m' e2
-  | LET (REC (f, x, e1), e2) ->
-      let closure = Closure (RecFun (f, x, e1), env) in
+  | Let (Rec (f, x, e1), e2) ->
+      let closure = VClosure (RecFun (f, x, e1), env) in
       eval (bind env (f, closure)) mem e2
-  | MALLOC e ->
+  | Malloc e ->
       let v, m' = eval env mem e in
       let l, m'' = malloc m' in
-      (Loc l, store m'' (l, v))
-  | ASSIGN (e1, e2) ->
+      (VLoc l, store m'' (l, v))
+  | Assign (e1, e2) ->
       let v1, m' = eval env mem e1 in
       let v2, m'' = eval env m' e2 in
       (v2, store m'' (getLoc v1, v2))
-  | BANG e ->
+  | Bang e ->
       let v, m' = eval env mem e in
       (load m' (getLoc v), m')
 
