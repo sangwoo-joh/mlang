@@ -1,6 +1,6 @@
 (** SNU 4190.310 Programming Languages *)
 
-open M.M
+open M
 
 module M_Printer : sig
   val print_exp : exp -> unit

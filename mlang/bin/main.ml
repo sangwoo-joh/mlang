@@ -22,7 +22,7 @@ let run () =
     let _ = M_Printer.print_exp pgm in
     print_newline () ) ;
   try M_Printer.print_typ (Mlang.Poly_checker.check pgm)
-  with M.TypeError _ -> print_endline "Type Checking Failed"
+  with TypeError _ -> print_endline "Type Checking Failed"
 
 
 let () = Printexc.catch run ()
