@@ -21,7 +21,7 @@ let run () =
     let _ = print_string "== Input Program ==\n" in
     let _ = M_Printer.print_exp pgm in
     print_newline () ) ;
-  try M_Printer.print_typ (Mlang.Poly_checker.check pgm)
+  try M_Printer.print_typ (Mlang.Type_checker.check pgm)
   with TypeError _ -> print_endline "Type Checking Failed"
 
 
