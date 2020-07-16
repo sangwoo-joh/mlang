@@ -1,4 +1,4 @@
 (executable
  (public_name mlang)
- (name main)
+ (name toplevel)
  (libraries mlang))

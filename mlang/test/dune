@@ -6,7 +6,7 @@ let test_cases = Sys.readdir tc_dir |> Array.to_list |> List.sort String.compare
 let stanza_fmt : ('a, 'b, 'c, 'd, 'e, 'f) format6 =
   {|
 (rule
- (with-stdout-to %s.output (run ../bin/main.exe ./examples/%s)))
+ (with-stdout-to %s.output (run ../bin/toplevel.exe ./examples/%s)))
 
 (rule
  (alias runtest)
