@@ -1,6 +1,9 @@
-(env (dev (flags -w -32-34-27)))
+(env
+ (dev
+  (flags -w -32-34-27)))
 
 (ocamlyacc parser)
+
 (ocamllex lexer)
 
 (library

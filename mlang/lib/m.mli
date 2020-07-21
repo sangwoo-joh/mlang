@@ -32,7 +32,7 @@ type typ =
   | TBool  (** boolean type *)
   | TString  (** string type *)
   | TPair of typ * typ  (** pair type *)
-  | TLoc of typ (** memory address *)
+  | TLoc of typ  (** memory address *)
 
 (** errors *)
 exception RunError of string
