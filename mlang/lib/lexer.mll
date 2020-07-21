@@ -3,8 +3,6 @@
 {
  open Parser
  open Error
- let debug_tag = false
- let verbose s =  if debug_tag then (print_string s; print_newline())
  let comment_depth = ref 0
  let keyword_tbl = Hashtbl.create 31
  let _ = List.iter (fun (keyword, tok) -> Hashtbl.add keyword_tbl keyword tok)
@@ -47,21 +45,21 @@ rule start =
                with _ -> ID id
             }
      | charstring { STRING(Lexing.lexeme lexbuf) }
-     | eof { verbose "eof"; EOF}
+     | eof {EOF}
      | "(*" { comment_depth :=1;
               comment lexbuf;
               start lexbuf }
-     | ";" { verbose ";"; SEMICOLON}
-     | ":=" { verbose ":="; COLONEQ}
-     | "=>" { verbose "=>"; RARROW}
-     | "=" {verbose "="; EQUAL}
-     | "+" {verbose "+"; PLUS}
-     | "-" {verbose "-"; MINUS}
-     | "!" {verbose "!"; BANG}
-     | "(" { verbose "("; LP}
-     | ")" { verbose ")"; RP}
-     | "." { verbose "."; DOT}
-     | "," { verbose ","; COMMA}
+     | ";" {SEMICOLON}
+     | ":=" {COLONEQ}
+     | "=>" {RARROW}
+     | "=" {EQUAL}
+     | "+" {PLUS}
+     | "-" {MINUS}
+     | "!" {BANG}
+     | "(" {LP}
+     | ")" {RP}
+     | "." {DOT}
+     | "," {COMMA}
      | _ {raise (Lex_err("illical token "^(Lexing.lexeme lexbuf), get_ln()))}
 
 and comment = parse
