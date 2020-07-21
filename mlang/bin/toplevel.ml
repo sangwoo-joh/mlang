@@ -1,6 +1,5 @@
 (** SNU 4190.310 Programming Languages *)
 
-
 open Mlang.M
 open Mlang.Pp
 
@@ -21,8 +20,11 @@ let run () =
     let _ = print_string "== Input Program ==\n" in
     let _ = M_Printer.print_exp pgm in
     print_newline () ) ;
-  try M_Printer.print_typ (Mlang.Type_checker.check pgm)
-  with TypeError _ -> print_endline "Type Checking Failed"
+  try M_Printer.print_typ (Mlang.Type_checker.check pgm) with
+  | TypeError _ ->
+      print_endline "Type Checking Failed"
+  | Failure e ->
+      print_endline e
 
 
 let () = Printexc.catch run ()
