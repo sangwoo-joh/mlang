@@ -1,0 +1,80 @@
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:
+
+\documentclass[12pt, a4paper, oneside]{book}
+\usepackage{lmodern}
+\usepackage[T1]{fontenc}     % font encoding
+\usepackage[utf8]{inputenc}  % input encoding
+\usepackage{hyperref}        % hyperlinks
+\usepackage{graphicx}
+\usepackage[english]{babel}
+\usepackage{mathtools}
+\usepackage{stmaryrd}
+\usepackage{amsfonts}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{mathabx}
+\usepackage{listings}
+
+\graphicspath{ {./images/} }
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Chapter quote at the start of chapter        %
+% Source: http://tex.stackexchange.com/a/53380 %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\makeatletter
+\renewcommand{\@chapapp}{}% Not necessary...
+\newenvironment{chapquote}[2][2em]
+{\setlength{\@tempdima}{#1}%
+  \def\chapquote@author{#2}%
+  \parshape 1 \@tempdima \dimexpr\textwidth-2\@tempdima\relax%
+  \itshape}
+{\par\normalfont\hfill--\ \chapquote@author\hspace*{\@tempdima}\par\bigskip}
+
+\newcommand{\SEM}[1]{\llbracket #1 \rrbracket}
+\newcommand{\pair}[1]{\langle #1 \rangle}
+\newcommand{\sle}{\sqsubseteq}
+\newcommand{\join}{\bigsqcup}
+\newcommand{\meet}{\bigsqcap}
+\newcommand{\blank}{\text{ }}
+
+
+\title{
+  \Huge \textbf{Language}
+  \\
+}
+
+\author{\textsc{Sangwoo Joh}\footnote{\url{https://sangwoo-joh.github.io}}}
+
+
+\begin{document}
+
+\frontmatter
+\maketitle
+
+\tableofcontents  % auto generate index from chapter, section, subsection, ...
+\listoffigures  % auto generate list from figure's caption
+\listoftables   % auto generate list from tagble's caption
+
+\mainmatter
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Syntax}
+\label{sec:syntax}
+
+\begin{figure}[h]
+  \begin{math}
+    \begin{array}{lcll}
+      exp & = & const & \text{constant} \\
+    \end{array}
+  \end{math}
+  
+  \caption{Syntax of language}
+  \label{fig:syntax}
+\end{figure}
+
+
+\end{document}

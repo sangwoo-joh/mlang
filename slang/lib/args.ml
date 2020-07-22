@@ -32,7 +32,7 @@ let common_help_secs =
   [ `S Manpage.s_common_options
   ; `P "These options are common to all commands."
   ; `S Manpage.s_bugs
-  ; `P "Please report bug at https://github.com/sangwoo-joh/mlang/issues" ]
+  ; `P "Please report bug at https://github.com/sangwoo-joh/slang/issues" ]
 
 
 let parse file =
