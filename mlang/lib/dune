@@ -3,4 +3,5 @@
 (ocamllex lexer)
 
 (library
- (name mlang))
+ (name mlang)
+ (libraries cmdliner))
