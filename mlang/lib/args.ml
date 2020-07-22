@@ -44,9 +44,11 @@ let parse file =
   exp
 
 
-let run file =
+let run _ file =
   if !debug then F.fprintf F.std_formatter "Start to running file %s@." file ;
-  M.run (parse file) ;
+  let exp = parse file in
+  if !debug && !level = Verbose then Pp.M_Printer.print_exp exp ;
+  M.run exp ;
   if !debug then F.fprintf F.std_formatter "Running complete@."
 
 
@@ -63,10 +65,10 @@ let run_cmd =
     ; `P "Run a program written in M programming language"
     ; `Blocks common_help_secs ]
   in
-  (Term.(const run $ file_const), Term.info "run" ~doc ~sdocs:Manpage.s_common_options ~exits ~man)
+  (Term.(const run $ common_opt_t $ file_const), Term.info "run" ~doc ~sdocs:Manpage.s_common_options ~exits ~man)
 
 
-let typecheck file =
+let typecheck _ file =
   if !debug then F.fprintf F.std_formatter "Start to type check file %s@." file ;
   ( match Type_checker.check (parse file) with
   | exception M.TypeError _ ->
@@ -84,7 +86,7 @@ let typecheck_cmd =
     ; `P "Type check a program written in M programming language"
     ; `Blocks common_help_secs ]
   in
-  ( Term.(const typecheck $ file_const)
+  ( Term.(const typecheck $ common_opt_t $ file_const)
   , Term.info "type" ~doc ~sdocs:Manpage.s_common_options ~exits ~man )
 
 
