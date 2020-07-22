@@ -61,8 +61,6 @@ and fexpr = Fun of id * exp | RecFun of id * id * exp
 
 and env = id -> value
 
-type memory = int * (loc -> value)
-
 (** notations (see 5 page in M.pdf)
    * f @+ (x, v)              f[x |-> v]
    * store M (l, v)           M[l |-> v]
@@ -85,8 +83,6 @@ let malloc m =
 
 (** auxiliary functions *)
 let getInt = function VInt n -> n | _ -> raise (TypeError "not an int")
-
-let getString = function VString s -> s | _ -> raise (TypeError "not a string")
 
 let getBool = function VBool b -> b | _ -> raise (TypeError "not a bool")
 
@@ -120,7 +116,7 @@ let op2fn = function
             raise (TypeError "EQ operands are not int/bool/str/loc") )
 
 
-let rec printValue = function
+let printValue = function
   | VInt n ->
       print_endline (string_of_int n)
   | VBool b ->
@@ -179,7 +175,7 @@ let rec eval env mem exp =
       let v, m' = eval env mem e in
       (snd (getPair v), m')
   | Seq (e1, e2) ->
-      let v, m' = eval env mem e1 in
+      let _, m' = eval env mem e1 in
       eval env m' e2
   | Let (Val (x, e1), e2) ->
       let v1, m' = eval env mem e1 in

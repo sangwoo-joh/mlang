@@ -3,7 +3,7 @@
 %{
 exception EmptyBinding
 let rec desugarLet =
-  function ([], e) -> raise EmptyBinding
+  function ([], _) -> raise EmptyBinding
    | (a::[], e) -> M.Let(a,e)
    | (a::r, e) -> M.Let(a, desugarLet(r,e))
 
