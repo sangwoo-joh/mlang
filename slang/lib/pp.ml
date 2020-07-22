@@ -1,5 +1,3 @@
-(** SNU 4190.310 Programming Languages *)
-
 open S
 
 module Printer : sig

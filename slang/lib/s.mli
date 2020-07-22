@@ -26,7 +26,6 @@ and decl =
 
 and bop = Add | Sub | Eq | And | Or
 
-(** type in M  *)
 type typ =
   | TInt  (** integer type *)
   | TBool  (** boolean type *)

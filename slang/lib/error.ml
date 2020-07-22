@@ -1,5 +1,3 @@
-(** SNU 4190.310 Programming Languages *)
-
 exception Lex_err of string * int
 
 let linenum = ref 1

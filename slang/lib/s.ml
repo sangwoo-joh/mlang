@@ -1,6 +1,3 @@
-(** SNU 4190.310 Programming Languages *)
-
-(** Definition of M's syntax, type and interpreter *)
 type exp =
   | Const of const
   | Var of id
@@ -29,7 +26,6 @@ and decl =
 
 and bop = Add | Sub | Eq | And | Or
 
-(** type in M  *)
 type typ =
   | TInt  (** integer type *)
   | TBool  (** boolean type *)
