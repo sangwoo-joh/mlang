@@ -1,8 +1,8 @@
 (** SNU 4190.310 Programming Languages *)
 
-open M
+open S
 
-module M_Printer : sig
+module Printer : sig
   val print_exp : exp -> unit
 
   val print_typ : typ -> unit

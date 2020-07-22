@@ -2,4 +2,4 @@
     Type Checker Skeleton *)
 
 (* TODO : Implement this function *)
-let check : M.exp -> M.typ = function _ -> failwith "unimplemented"
+let check : S.exp -> S.typ = function _ -> failwith "unimplemented"

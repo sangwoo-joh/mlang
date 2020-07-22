@@ -47,8 +47,8 @@ let parse file =
 let run _ file =
   if !debug then F.fprintf F.std_formatter "Start to running file %s@." file ;
   let exp = parse file in
-  if !debug && !level = Verbose then Pp.M_Printer.print_exp exp ;
-  M.run exp ;
+  if !debug && !level = Verbose then Pp.Printer.print_exp exp ;
+  S.run exp ;
   if !debug then F.fprintf F.std_formatter "Running complete@."
 
 
@@ -71,10 +71,10 @@ let run_cmd =
 let typecheck _ file =
   if !debug then F.fprintf F.std_formatter "Start to type check file %s@." file ;
   ( match Type_checker.check (parse file) with
-  | exception M.TypeError _ ->
+    | exception S.TypeError _ ->
       print_endline "Type Error"
   | t ->
-      Pp.M_Printer.print_typ t ) ;
+      Pp.Printer.print_typ t ) ;
   if !debug then F.fprintf F.std_formatter "Type checking complete@."
 
 
