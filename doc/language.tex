@@ -68,13 +68,79 @@
 \begin{figure}[h]
   \begin{math}
     \begin{array}{lcll}
+      program & = & exp & \text{program is made of expression} \\
       exp & = & const & \text{constant} \\
+              & | & var & \text{variable} \\
+              & | & exp \texttt{ ; } exp & \text{sequence operation} \\
+              & | & exp \texttt{ := } exp & \text{assignment} \\
+              & | & read & \text{read user input from stdin} \\
+              & | & \texttt{write} \blank exp & \text{write value into stdout} \\
+              & | & \texttt{alloc } exp & \text{heap allocation} \\
+              & | & \texttt{free } exp & \text{heap deallocation} \\
+              & | & \texttt{fn } var \texttt{ -> } exp & \text{lambda abstraction; anonymous function} \\
+              & | & \texttt{let } bind \texttt{ in } exp \texttt{ end} & \text{local block} \\
+              & | & exp \blank exp & \text{application} \\
+              & | & \texttt{if } exp \texttt{ then } exp \texttt{ else } exp & \text{branch} \\
+              & | & uop \blank exp & \text{unary operations} \\
+              & | & exp \blank bop \blank exp & \text{binary operations} \\
+              & | & \texttt{( } exp \texttt{ )} & \text{parenthesize} \\
+              & | & \texttt{( } exp \texttt{ , } exp \texttt{ )} & \text{pair} \\
+              & | & \texttt{fst } exp & \text{first from pair} \\
+              & | & \texttt{snd } exp & \text{second from pair} \\
+      const & = & \mathbb{N} & \text{natural number; integer} \\
+              & | & \mathbb{R} & \text{real number; float} \\
+              & | & \mathbb{B} & \text{boolean values; True or False} \\
+              & | & \texttt{"}\mathbb{C}^{*} \texttt{"} & \text{string literals} \\
+      var & = & \texttt{[a-zA-Z0-9\_-]+} & \text{variable} \\
+      bind & = & var \texttt{ = } exp & \text{value binding} \\
+              & | & \texttt{rec } var \texttt{ = } exp & \text{recursive value(function) binding} \\
+      read & = & \texttt{read\_nat} & \text{take user's natural number input from stdin} \\
+              & | & \texttt{read\_real} & \text{take user's real number input from stdin} \\
+              & | & \texttt{read\_str} & \text{take user's string input from stdin} \\
+      uop & = & \texttt{!} & \text{bang operator; pointer dereference} \\
+              & | & \texttt{not} & \text{unary logical not} \\
+      bop & = & \texttt{+} & \text{binary plus} \\
+              & | & \texttt{-} & \text{binary minus} \\
+              & | & \texttt{*} & \text{multiplication} \\
+              & | & \texttt{/} & \text{division} \\
+              & | & \texttt{and} & \text{logical and} \\
+              & | & \texttt{or} & \text{logical or} \\
+              & | & \texttt{xor} & \text{logical xor} \\
+              & | & \texttt{=} & \text{equality} \\
+              & | & \texttt{!=} & \text{not equal} \\
     \end{array}
   \end{math}
-  
+
   \caption{Syntax of language}
   \label{fig:syntax}
 \end{figure}
+
+
+\subsection{Program}
+\label{sec:program}
+
+A Program is an expression. If a program is function types, and it is
+polymorphic, then use type variables from alpha as \texttt{'a}. For
+example,
+
+\texttt{fn x -> x} is a program whose type is \texttt{'a -> 'a}
+
+
+If a program is made up with sequential expressions \texttt{exp; exp},
+then the type of the program is the type of the last expression.
+
+
+\texttt{write} call is a polymorphic function with type \texttt{'a ->
+  ()}
+
+
+Binary opations can be applied to different types, e.g. \texttt{1 +
+  3.2} or \texttt{``a'' + ``b''}. The type of the operations are
+always that of the first operand. For example, for \texttt{1 + 3.2},
+the type of the expression is an integer which has a value of
+\texttt{4}. For \texttt{``a'' + ``b''}, the type is a string which has
+a value of \texttt{``ab''}. Therefore, the expression \texttt{``a'' +
+  1} is a type error.
 
 
 \end{document}
