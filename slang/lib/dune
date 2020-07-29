@@ -7,4 +7,4 @@
  (name slang)
  (libraries core cmdliner)
  (preprocess
-  (pps ppx_compare)))
+  (pps ppx_compare ppx_sexp_conv)))

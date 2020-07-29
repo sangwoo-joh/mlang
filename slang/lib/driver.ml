@@ -21,7 +21,7 @@ let run opt file =
   if opt.debug then F.fprintf F.std_formatter "Start to running file %s@." file ;
   let exp = parse opt file in
   if opt.debug && opt.level = Verbose then F.fprintf F.std_formatter "@[<hov 2>%a@]@." Exp.pp exp ;
-  Interpret.eval exp ;
+  ignore (Interpret.run exp) ;
   if opt.debug then F.fprintf F.std_formatter "Running complete@."
 
 
