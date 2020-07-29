@@ -1,7 +1,10 @@
-(ocamlyacc parser)
+(menhir
+ (modules parser))
 
 (ocamllex lexer)
 
 (library
  (name slang)
- (libraries cmdliner))
+ (libraries core cmdliner)
+ (preprocess
+  (pps ppx_compare)))

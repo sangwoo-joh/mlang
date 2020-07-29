@@ -1,2 +1,2 @@
 (* TODO : Implement this function *)
-let check : S.exp -> S.typ = function _ -> failwith "unimplemented"
+let check : Exp.t -> Typ.t = function _ -> failwith "unimplemented"

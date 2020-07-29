@@ -1,16 +1,8 @@
 open Cmdliner
 module F = Format
+open Config
 
-type level = Normal | Quiet | Verbose
-
-let debug = ref false
-
-let level = ref Normal
-
-let common_opt d l =
-  debug := d ;
-  level := l
-
+let common_opt debug level = {debug; level}
 
 let common_opt_t =
   let docs = Manpage.s_common_options in
@@ -35,23 +27,6 @@ let common_help_secs =
   ; `P "Please report bug at https://github.com/sangwoo-joh/slang/issues" ]
 
 
-let parse file =
-  if !debug then F.fprintf F.std_formatter "Start to parsing file %s@." file ;
-  let chan = open_in file in
-  let lexbuf = Lexing.from_channel chan in
-  let exp = Parser.program Lexer.start lexbuf in
-  if !debug then F.fprintf F.std_formatter "Parsing complete@." ;
-  exp
-
-
-let run _ file =
-  if !debug then F.fprintf F.std_formatter "Start to running file %s@." file ;
-  let exp = parse file in
-  if !debug && !level = Verbose then Pp.Printer.print_exp exp ;
-  S.run exp ;
-  if !debug then F.fprintf F.std_formatter "Running complete@."
-
-
 let file_const =
   let doc = "M language file $(docv) to execute." in
   Arg.(value & pos 0 string "" & info [] ~docv:"source" ~doc)
@@ -65,17 +40,8 @@ let run_cmd =
     ; `P "Run a program written in M programming language"
     ; `Blocks common_help_secs ]
   in
-  (Term.(const run $ common_opt_t $ file_const), Term.info "run" ~doc ~sdocs:Manpage.s_common_options ~exits ~man)
-
-
-let typecheck _ file =
-  if !debug then F.fprintf F.std_formatter "Start to type check file %s@." file ;
-  ( match Type_checker.check (parse file) with
-    | exception S.TypeError _ ->
-      print_endline "Type Error"
-  | t ->
-      Pp.Printer.print_typ t ) ;
-  if !debug then F.fprintf F.std_formatter "Type checking complete@."
+  ( Term.(const Driver.run $ common_opt_t $ file_const)
+  , Term.info "run" ~doc ~sdocs:Manpage.s_common_options ~exits ~man )
 
 
 let typecheck_cmd =
@@ -86,7 +52,7 @@ let typecheck_cmd =
     ; `P "Type check a program written in M programming language"
     ; `Blocks common_help_secs ]
   in
-  ( Term.(const typecheck $ common_opt_t $ file_const)
+  ( Term.(const Driver.typecheck $ common_opt_t $ file_const)
   , Term.info "type" ~doc ~sdocs:Manpage.s_common_options ~exits ~man )
 
 

@@ -1,70 +1,93 @@
 {
- open Parser
- open Error
- let comment_depth = ref 0
- let keyword_tbl = Hashtbl.create 31
- let _ = List.iter (fun (keyword, tok) -> Hashtbl.add keyword_tbl keyword tok)
-                   [("true", TRUE);
-                    ("false", FALSE);
-                    ("and", AND);
-                    ("or", OR);
-                    ("if", IF);
-                    ("then",THEN);
-                    ("else",ELSE);
-                    ("let", LET);
-                    ("in", IN);
-                    ("end", END);
-                    ("fn", FN);
-                    ("read" , READ);
-                    ("rec" , REC);
-                    ("write", WRITE);
-                    ("malloc", MALLOC);
-                    ("val", VAL)
-                  ]
+open Lexing
+open Parser
 
-     let s2int = function "" -> raise (Lex_err("illegal number token", get_ln()))
-       		   | s -> if ('~' = String.get s 0) then
-                   - (int_of_string(String.sub s 1 ((String.length s)-1)))
-                   else int_of_string s
+exception LexingError of string
+
+module F = Format
+
+let pos lexbuf = lexbuf.lex_start_p
+
+let comment_depth = ref 0
 }
 
-let blank = [' ' '\t']+
-let id = ['a'-'z' 'A'-'Z'](['a'-'z' 'A'-'Z' '\'' '0'-'9' '_'])*
-let number = ['0'-'9']+|'~'['0'-'9']+
-let charstring = '"' [^ '"' '\n']* '"'
+let whitespace = [' ' '\t']
+let newline = '\n' | "\r\n"
+let identifier = ['a'-'z' 'A'-'Z' '_']['a'-'z' 'A'-'Z' '\'' '0'-'9' '_']*
+let digit = ['0'-'9']
+let nonzerodigit = ['1'-'9']
+let intpart = digit+
+let fraction = '.' digit+
+let decimal = nonzerodigit digit* | '0'
+let floatingpoint = intpart? fraction | intpart '.'
+let stringliteral = '"' [^ '"' ]* '"'
 
-rule start =
- parse blank { start lexbuf }
-     | "\r\n"     { incr_ln (); start lexbuf}
-     | '\n'       { incr_ln (); start lexbuf}
-     | number { NUM (s2int(Lexing.lexeme lexbuf)) }
-     | id { let id = Lexing.lexeme lexbuf
-            in try Hashtbl.find keyword_tbl id
-               with _ -> ID id
-            }
-     | charstring { STRING(Lexing.lexeme lexbuf) }
-     | eof {EOF}
-     | "(*" { comment_depth :=1;
-              comment lexbuf;
-              start lexbuf }
-     | ";" {SEMICOLON}
-     | ":=" {COLONEQ}
-     | "=>" {RARROW}
-     | "=" {EQUAL}
-     | "+" {PLUS}
-     | "-" {MINUS}
-     | "!" {BANG}
-     | "(" {LP}
-     | ")" {RP}
-     | "." {DOT}
-     | "," {COMMA}
-     | _ {raise (Lex_err("illical token "^(Lexing.lexeme lexbuf), get_ln()))}
 
+rule token = parse
+  | whitespace+
+    { token lexbuf } (** consume blanks *)
+  | newline+
+    { token lexbuf } (** consume blanks *)
+  | decimal as n
+    { NAT (int_of_string n, pos lexbuf) }
+  | floatingpoint as f
+    { REAL (float_of_string f, pos lexbuf) }
+  | stringliteral as s
+    { STR (s, pos lexbuf) }
+  | identifier as id
+    { let cursor = pos lexbuf in
+      (** keywords *)
+      match id with
+      | "true" -> BOOL (true, cursor)
+      | "false" -> BOOL (false, cursor)
+      | "read_nat" -> READNAT cursor
+      | "read_real" -> READREAL cursor
+      | "read_str" -> READSTR cursor
+      | "write" -> WRITE cursor
+      | "alloc" -> ALLOC cursor
+      | "fn" -> FN cursor
+      | "let" -> LET cursor
+      | "rec" -> REC cursor
+      | "in" -> IN cursor
+      | "end" -> END cursor
+      | "if" -> IF cursor
+      | "then" -> THEN cursor
+      | "else" -> ELSE cursor
+      | "not" -> NOT cursor
+      | "and" -> AND cursor
+      | "or" -> OR cursor
+      | "xor" -> XOR cursor
+      | "fst" -> FST cursor
+      | "snd" -> SND cursor
+      | _ -> VAR (id, cursor) }
+  | ";" { SEMICOLON (pos lexbuf) }
+  | ":=" { COLONEQ (pos lexbuf) }
+  | "->" { RIGHTARROW (pos lexbuf) }
+  | "=" { EQ (pos lexbuf) }
+  | "," { COMMA (pos lexbuf) }
+  | "+" { PLUS (pos lexbuf) }
+  | "-" { MINUS (pos lexbuf) }
+  | "*" { MULT (pos lexbuf) }
+  | "/" { DIV (pos lexbuf) }
+  | "!=" { NEQ (pos lexbuf) }
+  | "(" { LEFTPAREN (pos lexbuf) }
+  | ")" { RIGHTPAREN (pos lexbuf) }
+  | "!" { BANG (pos lexbuf) }
+  | eof { EOF (pos lexbuf) }
+  | "(*"
+      { incr comment_depth;
+        comment lexbuf;
+        token lexbuf }
+  | _
+      { let invalid_token = Lexing.lexeme lexbuf in
+        let cursor = pos lexbuf in
+        let msg = F.asprintf "%a: error: invalid token: %s" Util.pp_pos cursor invalid_token in
+        raise (LexingError msg) }
 and comment = parse
-     "(*" {comment_depth := !comment_depth+1; comment lexbuf}
-   | "*)" {comment_depth := !comment_depth-1;
-           if !comment_depth > 0 then comment lexbuf }
-   | eof {raise (Lex_err("Eof within comment",get_ln()))}
-   | '\n' {incr_ln(); comment lexbuf}
-   | "\r\n" {incr_ln(); comment lexbuf}
-   | _   {comment lexbuf}
+  | "(*" { incr comment_depth; comment lexbuf }
+  | "*)" { decr comment_depth; if !comment_depth > 0 then comment lexbuf }
+  | eof
+      { let cursor = pos lexbuf in
+        let msg = F.asprintf "%a: error: invalid comment" Util.pp_pos cursor in
+        raise (LexingError msg) }
+  | _ { comment lexbuf }
