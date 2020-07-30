@@ -32,7 +32,7 @@ end = struct
   type nonrec t = Value.t t
 
   let pp fmt env =
-    let pp_map ~key ~data fmt = F.fprintf fmt "%a |-> %a@;" Var.pp key Value.pp data in
+    let pp_map ~key ~data fmt = F.fprintf fmt "%a  |----->  %a@;" Var.pp key Value.pp data in
     iteri env ~f:(pp_map fmt)
 
 
@@ -191,7 +191,7 @@ module Memory = struct
   let empty : t = create ()
 
   let pp fmt m =
-    let pp_map ~key ~data fmt = F.fprintf fmt "%a -> %a@;" Loc.pp key Value.pp data in
+    let pp_map ~key ~data fmt = F.fprintf fmt "%a  ----->  %a@;" Loc.pp key Value.pp data in
     iteri m ~f:(pp_map fmt)
 
 
@@ -243,7 +243,7 @@ let rec eval : Env.t -> Memory.t -> Exp.t -> Value.t * Memory.t =
   | Write t ->
       (* polymorphic write *)
       let v, mem' = eval env mem t in
-      F.fprintf F.std_formatter "@[<hov 2%a@]@." Value.pp v ;
+      F.fprintf F.std_formatter "@[<hov 2>%a@]@." Value.pp v ;
       (v, mem')
   | Alloc t ->
       (* alloc fresh location *)
