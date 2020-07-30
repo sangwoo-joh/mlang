@@ -24,16 +24,16 @@ let common_help_secs =
 
 
 let file_const =
-  let doc = "M language file $(docv) to execute." in
+  let doc = "S language file $(docv) to execute." in
   Arg.(value & pos 0 string "" & info [] ~docv:"source" ~doc)
 
 
 let run_cmd =
-  let doc = "Run the M language source file." in
+  let doc = "Run the S language source file." in
   let exits = Term.default_exits in
   let man =
     [ `S Manpage.s_description
-    ; `P "Run a program written in M programming language"
+    ; `P "Run a program written in S programming language"
     ; `Blocks common_help_secs ]
   in
   ( Term.(const Driver.run $ common_opt_t $ file_const)
@@ -41,11 +41,11 @@ let run_cmd =
 
 
 let typecheck_cmd =
-  let doc = "Type check the M language source file." in
+  let doc = "Type check the S language source file." in
   let exits = Term.default_exits in
   let man =
     [ `S Manpage.s_description
-    ; `P "Type check a program written in M programming language"
+    ; `P "Type check a program written in S programming language"
     ; `Blocks common_help_secs ]
   in
   ( Term.(const Driver.typecheck $ common_opt_t $ file_const)
@@ -54,7 +54,7 @@ let typecheck_cmd =
 
 let default_cmd =
   ( Term.(ret (const (fun _ -> `Help (`Pager, None)) $ common_opt_t))
-  , Term.info "toplevel" ~version:"v0.1" ~doc:"toplevel for M language"
+  , Term.info "toplevel" ~version:"v0.1" ~doc:"toplevel for S language"
       ~sdocs:Manpage.s_common_options ~exits:Term.default_exits ~man:common_help_secs )
 
 
