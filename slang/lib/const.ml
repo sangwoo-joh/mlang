@@ -11,4 +11,4 @@ let pp fmt = function
   | Bool b ->
       F.fprintf fmt "%b" b
   | Str s ->
-      F.fprintf fmt {|"%s"|} s
+      F.fprintf fmt "%s" s
