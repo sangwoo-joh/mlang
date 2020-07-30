@@ -375,8 +375,16 @@ let eval_bop ~op c1 c2 =
         (Typ.TypeError (F.asprintf "Type error: not allowed to %a %a %a@." pp c1 Exp.pp_op op pp c2))
 
 
-let rec eval : Env.t -> Memory.t -> Exp.t -> Value.t * Memory.t =
- fun env mem exp ->
+let verbose_step env mem exp =
+  F.fprintf F.std_formatter
+    "@[<hov 2><<<<<<<< verbose step >>>>>>>>@\n[memory]@\n%a@\n@\n[env]@\n%a@\n@\n[exp]@\n%a@\n@]@." Memory.pp mem
+    Env.pp env Exp.pp exp
+
+
+let rec eval : ?verbose:bool -> Env.t -> Memory.t -> Exp.t -> Value.t * Memory.t =
+ fun ?(verbose = false) env mem exp ->
+  let eval = eval ~verbose in
+  if verbose then verbose_step env mem exp ;
   match exp with
   | Const const ->
       (Value.of_const const, mem)
@@ -497,4 +505,5 @@ let rec eval : Env.t -> Memory.t -> Exp.t -> Value.t * Memory.t =
       (Value.snd_of v, mem')
 
 
-let run : Exp.t -> Value.t * Memory.t = fun exp -> eval Env.empty Memory.empty exp
+let run : ?verbose:bool -> Exp.t -> Value.t * Memory.t =
+ fun ?(verbose = false) exp -> eval ~verbose Env.empty Memory.empty exp

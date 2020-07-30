@@ -2,14 +2,10 @@ open Cmdliner
 module F = Format
 open Config
 
-let common_opt debug level = {debug; level}
+let common_opt level = level
 
 let common_opt_t =
   let docs = Manpage.s_common_options in
-  let debug =
-    let doc = "Debug mode" in
-    Arg.(value & flag & info ["debug"] ~docs ~doc)
-  in
   let level =
     let doc = "Suppress all stdout" in
     let quiet = (Quiet, Arg.info ["q"; "quiet"] ~docs ~doc) in
@@ -17,7 +13,7 @@ let common_opt_t =
     let verbose = (Verbose, Arg.info ["v"; "verbose"] ~docs ~doc) in
     Arg.(last & vflag_all [Normal] [quiet; verbose])
   in
-  Term.(const common_opt $ debug $ level)
+  Term.(const common_opt $ level)
 
 
 let common_help_secs =

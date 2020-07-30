@@ -1,3 +1,5 @@
 type level = Normal | Quiet | Verbose
 
-type opt = {debug: bool; level: level}
+let is_verbose = function Verbose -> true | _ -> false
+
+let is_quiet = function Quiet -> true | _ -> false
