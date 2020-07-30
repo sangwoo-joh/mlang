@@ -245,7 +245,135 @@ module Memory = struct
         raise (RuntimeError (F.asprintf "Invalid location: %a@." Loc.pp l))
 end
 
-[@@@warning "-27-32"]
+let eval_bop ~op c1 c2 =
+  let open Const in
+  match op with
+  | Exp.Plus -> (
+    match (c1, c2) with
+    | Nat n1, Nat n2 ->
+        Nat (n1 + n2)
+    | Nat n1, Real r2 ->
+        Nat (n1 + int_of_float r2)
+    | Real r1, Real r2 ->
+        Real (r1 +. r2)
+    | Real r1, Nat n2 ->
+        Real (r1 +. float_of_int n2)
+    | Str s1, Str s2 ->
+        Str (s1 ^ s2)
+    | _ ->
+        raise
+          (Typ.TypeError
+             (F.asprintf "Type error: not allowed to %a %a %a@." pp c1 Exp.pp_op op pp c2)) )
+  | Exp.Minus -> (
+    match (c1, c2) with
+    | Nat n1, Nat n2 ->
+        Nat (n1 - n2)
+    | Nat n1, Real r2 ->
+        Nat (n1 - int_of_float r2)
+    | Real r1, Real r2 ->
+        Real (r1 -. r2)
+    | Real r1, Nat n2 ->
+        Real (r1 -. float_of_int n2)
+    | _ ->
+        raise
+          (Typ.TypeError
+             (F.asprintf "Type error: not allowed to %a %a %a@." pp c1 Exp.pp_op op pp c2)) )
+  | Exp.Mult -> (
+    match (c1, c2) with
+    | Nat n1, Nat n2 ->
+        Nat (n1 * n2)
+    | Nat n1, Real r2 ->
+        Nat (n1 * int_of_float r2)
+    | Real r1, Real r2 ->
+        Real (r1 *. r2)
+    | Real r1, Nat n2 ->
+        Real (r1 *. float_of_int n2)
+    | _ ->
+        raise
+          (Typ.TypeError
+             (F.asprintf "Type error: not allowed to %a %a %a@." pp c1 Exp.pp_op op pp c2)) )
+  | Exp.Div -> (
+    match (c1, c2) with
+    | Nat n1, Nat n2 ->
+        if n2 = 0 then raise (RuntimeError "Division by zero@.") ;
+        Nat (n1 / n2)
+    | Nat n1, Real r2 ->
+        if Float.equal r2 0. then raise (RuntimeError "Division by zero@.") ;
+        Nat (n1 / int_of_float r2)
+    | Real r1, Real r2 ->
+        if Float.equal r2 0. then raise (RuntimeError "Division by zero@.") ;
+        Real (r1 /. r2)
+    | Real r1, Nat n2 ->
+        if n2 = 0 then raise (RuntimeError "Division by zero@.") ;
+        Real (r1 /. float_of_int n2)
+    | _ ->
+        raise
+          (Typ.TypeError
+             (F.asprintf "Type error: not allowed to %a %a %a@." pp c1 Exp.pp_op op pp c2)) )
+  | Exp.Eq -> (
+    match (c1, c2) with
+    | Nat n1, Nat n2 ->
+        Bool (n1 = n2)
+    | Nat n1, Real r2 ->
+        Bool (n1 = int_of_float r2)
+    | Real r1, Real r2 ->
+        Bool Float.(r1 =. r2)
+    | Real r1, Nat n2 ->
+        Bool Float.(r1 =. float_of_int n2)
+    | Bool b1, Bool b2 ->
+        Bool Bool.(b1 = b2)
+    | Str s1, Str s2 ->
+        Bool String.(s1 = s2)
+    | _ ->
+        raise
+          (Typ.TypeError
+             (F.asprintf "Type error: not allowed to %a %a %a@." pp c1 Exp.pp_op op pp c2)) )
+  | Exp.Neq -> (
+    match (c1, c2) with
+    | Nat n1, Nat n2 ->
+        Bool (n1 <> n2)
+    | Nat n1, Real r2 ->
+        Bool (n1 <> int_of_float r2)
+    | Real r1, Real r2 ->
+        Bool Float.(r1 <>. r2)
+    | Real r1, Nat n2 ->
+        Bool Float.(r1 <> float_of_int n2)
+    | Bool b1, Bool b2 ->
+        Bool Bool.(b1 <> b2)
+    | Str s1, Str s2 ->
+        Bool String.(s1 <> s2)
+    | _ ->
+        raise
+          (Typ.TypeError
+             (F.asprintf "Type error: not allowed to %a %a %a@." pp c1 Exp.pp_op op pp c2)) )
+  | Exp.And -> (
+    match (c1, c2) with
+    | Bool b1, Bool b2 ->
+        Bool (b1 && b2)
+    | _ ->
+        raise
+          (Typ.TypeError
+             (F.asprintf "Type error: not allowed to %a %a %a@." pp c1 Exp.pp_op op pp c2)) )
+  | Exp.Or -> (
+    match (c1, c2) with
+    | Bool b1, Bool b2 ->
+        Bool (b1 || b2)
+    | _ ->
+        raise
+          (Typ.TypeError
+             (F.asprintf "Type error: not allowed to %a %a %a@." pp c1 Exp.pp_op op pp c2)) )
+  | Exp.Xor -> (
+    match (c1, c2) with
+    | Bool b1, Bool b2 ->
+        Bool Bool.(b1 <> b2)
+    | _ ->
+        raise
+          (Typ.TypeError
+             (F.asprintf "Type error: not allowed to %a %a %a@." pp c1 Exp.pp_op op pp c2)) )
+  | Exp.Bang | Exp.Not ->
+      raise
+        (Typ.TypeError (F.asprintf "Type error: not allowed to %a %a %a@." pp c1 Exp.pp_op op pp c2))
+
 
 let rec eval : Env.t -> Memory.t -> Exp.t -> Value.t * Memory.t =
  fun env mem exp ->
@@ -289,7 +417,7 @@ let rec eval : Env.t -> Memory.t -> Exp.t -> Value.t * Memory.t =
       let v, mem' = eval env mem t in
       Memory.store mem' loc v ;
       (Value.of_loc loc, mem')
-  | Lambda {var; body} as lambda ->
+  | Lambda _ as lambda ->
       let closure = Closure.of_fun env lambda in
       (Value.of_closure closure, mem)
   | Let {bind; block} ->
@@ -347,8 +475,16 @@ let rec eval : Env.t -> Memory.t -> Exp.t -> Value.t * Memory.t =
               raise (RuntimeError (F.asprintf "Invalid unary operation: %a@." Exp.pp_op op)))
       in
       (v', mem')
-  | Bop {op; e1; e2} ->
-      failwith "TODO"
+  | Bop {op; e1; e2} -> (
+      let v1, m1 = eval env mem e1 in
+      let v2, m2 = eval env m1 e2 in
+      match (v1, v2) with
+      | Value.Const c1, Value.Const c2 ->
+          (Value.Const (eval_bop ~op c1 c2), m2)
+      | _, _ ->
+          raise
+            (Typ.TypeError
+               (F.asprintf "Not allowed to %a %a %a@." Value.pp v1 Exp.pp_op op Value.pp v2)) )
   | Pair {fst; snd} ->
       let v1, mem' = eval env mem fst in
       let v2, mem'' = eval env mem' snd in
