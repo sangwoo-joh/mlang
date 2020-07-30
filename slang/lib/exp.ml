@@ -43,9 +43,9 @@ let rec pp fmt = function
   | Var v ->
       F.fprintf fmt "%a" Var.pp v
   | Seq {e1; e2} ->
-      F.fprintf fmt "%a;@;%a" pp e1 pp e2
+      F.fprintf fmt "%a;@\n%a" pp e1 pp e2
   | Assign {lhs; rhs} ->
-      F.fprintf fmt "(%a := %a)@," pp lhs pp rhs
+      F.fprintf fmt "(%a := %a)" pp lhs pp rhs
   | Read r -> (
     match r with
     | ReadNat ->
@@ -59,13 +59,13 @@ let rec pp fmt = function
   | Alloc e ->
       F.fprintf fmt "alloc(%a)" pp e
   | Lambda {var; body} ->
-      F.fprintf fmt "(fn %a -> %a)@," Var.pp var pp body
+      F.fprintf fmt "(fn %a -> %a)" Var.pp var pp body
   | Let {bind; block} ->
-      F.fprintf fmt "@[<hv 2>let %a in@;%a@;end@]" pp_bind bind pp block
+      F.fprintf fmt "@[<hv 2>let %a in@\n%a@\nend@]@." pp_bind bind pp block
   | App {e1; e2} ->
       F.fprintf fmt "@[<hv 2>(%a %a)@]" pp e1 pp e2
   | Branch {cond; _then; _else} ->
-      F.fprintf fmt "@[<hv 2>if %a then@; %a else@; %a@]" pp cond pp _then pp _else
+      F.fprintf fmt "@[<hv 2>if %a then@\n%a else@\n%a@]@." pp cond pp _then pp _else
   | Uop {op; exp} ->
       F.fprintf fmt "%a(%a)" pp_op op pp exp
   | Bop {op; e1; e2} ->

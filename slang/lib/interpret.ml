@@ -32,7 +32,7 @@ end = struct
   type nonrec t = Value.t t
 
   let pp fmt env =
-    let pp_map ~key ~data fmt = F.fprintf fmt "%a  |----->  %a@;" Var.pp key Value.pp data in
+    let pp_map ~key ~data fmt = F.fprintf fmt "%a  |----->  %a@\n" Var.pp key Value.pp data in
     iteri env ~f:(pp_map fmt)
 
 
@@ -229,7 +229,7 @@ module Memory = struct
   let empty : t = create ()
 
   let pp fmt m =
-    let pp_map ~key ~data fmt = F.fprintf fmt "%a  ----->  %a@;" Loc.pp key Value.pp data in
+    let pp_map ~key ~data fmt = F.fprintf fmt "%a  ----->  %a@\n" Loc.pp key Value.pp data in
     iteri m ~f:(pp_map fmt)
 
 
