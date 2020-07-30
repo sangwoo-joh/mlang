@@ -161,42 +161,42 @@ end = struct
     | Pair (f, _) ->
         f
     | _ as v ->
-        raise (RuntimeError (F.asprintf "fst: Not a pair: %a@." pp v))
+        raise (Typ.TypeError (F.asprintf "fst: Not a pair: %a@." pp v))
 
 
   let snd_of = function
     | Pair (_, s) ->
         s
     | _ as v ->
-        raise (RuntimeError (F.asprintf "snd: Not a pair: %a@." pp v))
+        raise (Typ.TypeError (F.asprintf "snd: Not a pair: %a@." pp v))
 
 
   let int_of = function
     | Const (Const.Nat i) ->
         i
     | _ as v ->
-        raise (RuntimeError (F.asprintf "Not an integer: %a@." pp v))
+        raise (Typ.TypeError (F.asprintf "Not an integer: %a@." pp v))
 
 
   let float_of = function
     | Const (Const.Real r) ->
         r
     | _ as v ->
-        raise (RuntimeError (F.asprintf "Not a float: %a@." pp v))
+        raise (Typ.TypeError (F.asprintf "Not a float: %a@." pp v))
 
 
   let bool_of = function
     | Const (Const.Bool b) ->
         b
     | _ as v ->
-        raise (RuntimeError (F.asprintf "Not a boolean: %a@." pp v))
+        raise (Typ.TypeError (F.asprintf "Not a boolean: %a@." pp v))
 
 
   let str_of = function
     | Const (Const.Str s) ->
         s
     | _ as v ->
-        raise (RuntimeError (F.asprintf "Not a string: %a@." pp v))
+        raise (Typ.TypeError (F.asprintf "Not a string: %a@." pp v))
 
 
   let loc_of = function
@@ -210,7 +210,7 @@ end = struct
     | Closure c ->
         c
     | _ as v ->
-        raise (RuntimeError (F.asprintf "Not a closure: %a@." pp v))
+        raise (Typ.TypeError (F.asprintf "Not a closure: %a@." pp v))
 end
 
 module Memory = struct
