@@ -48,33 +48,62 @@ end
 
 (** closure: env with function abstraction *)
 and Closure : sig
-  type t
-
-  val pp : F.formatter -> t -> unit
-
-  val of_fun : ?recursive:bool -> Env.t -> Exp.t -> Closure.t
-end = struct
-  type fexp = Fun of Exp.t | RecFun of Exp.t
+  type fexp = Fun of Exp.t | RecFun of Var.t * Exp.t * int
 
   type t = {env: Env.t; fexp: fexp}
 
-  let of_fun ?(recursive = false) env lambda =
+  val pp_fexp : F.formatter -> fexp -> unit
+
+  val pp : F.formatter -> t -> unit
+
+  val of_fun : Env.t -> Exp.t -> Closure.t
+
+  val of_rec : Env.t -> fname:Var.t -> depth:int -> Exp.t -> Closure.t
+
+  val max_recursion : int
+
+  val next_call : t -> t
+end = struct
+  type fexp = Fun of Exp.t | RecFun of Var.t * Exp.t * int
+
+  type t = {env: Env.t; fexp: fexp}
+
+  let max_recursion = 256
+
+  let next_call t =
+    match t.fexp with
+    | Fun _ ->
+        t
+    | RecFun (var, exp, depth) ->
+        {t with fexp= RecFun (var, exp, depth + 1)}
+
+
+  let of_fun env lambda =
     let open Exp in
     match lambda with
     | Lambda _ ->
-        if recursive then {env; fexp= RecFun lambda} else {env; fexp= Fun lambda}
+        {env; fexp= Fun lambda}
     | _ as e ->
         raise (RuntimeError (F.asprintf "Not a closure: %a@." Exp.pp e))
 
 
-  let pp fmt {env; fexp} =
-    let pp_fexp fmt = function
-      | Fun e ->
-          Exp.pp fmt e
-      | RecFun e ->
-          F.fprintf fmt "rec %a" Exp.pp e
-    in
-    F.fprintf fmt "<closure> (env: %a) (%a)" Env.pp env pp_fexp fexp
+  let of_rec env ~fname ~depth lambda =
+    let open Exp in
+    match lambda with
+    | Lambda _ ->
+        {env; fexp= RecFun (fname, lambda, depth)}
+    | _ as e ->
+        raise (RuntimeError (F.asprintf "Not a closure: %a@." Exp.pp e))
+
+
+  let pp_fexp fmt = function
+    | Fun e ->
+        Exp.pp fmt e
+    | RecFun (f, e, depth) ->
+        F.fprintf fmt "rec (%i) %a:%a" depth Var.pp f Exp.pp e
+
+
+  let pp fmt {env; fexp} = F.fprintf fmt "<closure> (env: %a) (%a)" Env.pp env pp_fexp fexp
 end
 
 (** value: caculated value *)
@@ -104,6 +133,8 @@ and Value : sig
   val str_of : t -> string
 
   val loc_of : t -> Loc.t
+
+  val closure_of : t -> Closure.t
 end = struct
   type t = Const of Const.t | Loc of Loc.t | Pair of t * t | Closure of Closure.t
 
@@ -173,6 +204,13 @@ end = struct
         l
     | _ as v ->
         raise (RuntimeError (F.asprintf "Not a valid location: %a@." pp v))
+
+
+  let closure_of = function
+    | Closure c ->
+        c
+    | _ as v ->
+        raise (RuntimeError (F.asprintf "Not a closure: %a@." pp v))
 end
 
 module Memory = struct
@@ -252,7 +290,7 @@ let rec eval : Env.t -> Memory.t -> Exp.t -> Value.t * Memory.t =
       Memory.store mem' loc v ;
       (Value.of_loc loc, mem')
   | Lambda {var; body} as lambda ->
-      let closure = Closure.of_fun env lambda ~recursive:false in
+      let closure = Closure.of_fun env lambda in
       (Value.of_closure closure, mem)
   | Let {bind; block} ->
       let open Exp in
@@ -264,12 +302,33 @@ let rec eval : Env.t -> Memory.t -> Exp.t -> Value.t * Memory.t =
             (Env.bind env lhs rv, mem')
         | Rec {lhs; rhs} ->
             (* recursive let-binding *)
-            let closure = Closure.of_fun env rhs ~recursive:true in
+            let closure = Closure.of_rec env ~fname:lhs ~depth:0 rhs in
             (Env.bind env lhs (Value.of_closure closure), mem)
       in
       eval env' mem' block
-  | App {e1; e2} ->
-      failwith "TODO"
+  | App {e1; e2} -> (
+      let v1, m1 = eval env mem e1 in
+      let v2, m2 = eval env m1 e2 in
+      let closure = Value.closure_of v1 in
+      match closure.fexp with
+      | Closure.Fun (Exp.Lambda {var; body}) ->
+          (* non-recursive function call *)
+          (* just bind [v2] as function argument, and eval [body] of closure *)
+          let env' = Env.bind closure.env var v2 in
+          eval env' m2 body
+      | Closure.RecFun (fname, Exp.Lambda {var; body}, depth) ->
+          (* recursive function call *)
+          (* check stackoverflow *)
+          if depth > Closure.max_recursion then
+            raise (RuntimeError "Stack overflow: exceeded max recursion") ;
+          (* 1. bind [v2] as function argument, as non-recursive function does *)
+          let env' = Env.bind closure.env var v2 in
+          (* 2. set recursive function call with new depth *)
+          let env'' = Env.bind env' fname (Value.of_closure (Closure.next_call closure)) in
+          eval env'' m2 body
+      | _ as nonfun ->
+          raise
+            (RuntimeError (F.asprintf "Application: not a function: %a@." Closure.pp_fexp nonfun)) )
   | Branch {cond; _then; _else} ->
       let vcond, mem' = eval env mem cond in
       eval env mem' (if Value.bool_of vcond then _then else _else)
