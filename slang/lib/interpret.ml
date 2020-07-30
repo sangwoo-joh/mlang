@@ -377,8 +377,8 @@ let eval_bop ~op c1 c2 =
 
 let verbose_step env mem exp =
   F.fprintf F.std_formatter
-    "@[<hov 2><<<<<<<< verbose step >>>>>>>>@\n[memory]@\n%a@\n@\n[env]@\n%a@\n@\n[exp]@\n%a@\n@]@." Memory.pp mem
-    Env.pp env Exp.pp exp
+    "@[<hov 2><<<<<<<< verbose step >>>>>>>>@\n[memory]@\n%a@\n@\n[env]@\n%a@\n@\n[exp]@\n%a@\n@]@."
+    Memory.pp mem Env.pp env Exp.pp exp
 
 
 let rec eval : ?verbose:bool -> Env.t -> Memory.t -> Exp.t -> Value.t * Memory.t =
@@ -507,3 +507,37 @@ let rec eval : ?verbose:bool -> Env.t -> Memory.t -> Exp.t -> Value.t * Memory.t
 
 let run : ?verbose:bool -> Exp.t -> Value.t * Memory.t =
  fun ?(verbose = false) exp -> eval ~verbose Env.empty Memory.empty exp
+
+
+let repl : verbose:bool -> unit =
+ fun ~verbose ->
+  if verbose then Out_channel.print_endline "Slang REPL v0.1" ;
+  let env, mem = (Env.empty, ref Memory.empty) in
+  let running = ref true in
+  while !running do
+    Out_channel.print_string "toplevel # " ;
+    Out_channel.(flush stdout) ;
+    match In_channel.(input_line_exn stdin) with
+    | line -> (
+        let lexbuf = Lexing.from_string line in
+        match Parser.parse Lexer.token lexbuf with
+        | exp -> (
+          match eval env !mem exp with
+          | v, mem' ->
+              mem := mem' ;
+              Value.pp F.std_formatter v ;
+              Out_channel.(flush stdout) ;
+              if verbose then
+                F.fprintf F.std_formatter "@\n@\n(memory footprint): %a@." Memory.pp !mem
+          | exception RuntimeError msg ->
+              F.fprintf F.err_formatter "Runtime error: %s@." msg
+          | exception Typ.TypeError msg ->
+              F.fprintf F.err_formatter "Type error: %s@." msg )
+        | exception Lexer.LexingError msg ->
+            F.fprintf F.err_formatter "Lexing error: %s@." msg
+        | exception _ ->
+            F.fprintf F.err_formatter "Syntax error@." )
+    | exception _ ->
+        F.fprintf F.err_formatter "@.Exit@." ;
+        running := false
+  done

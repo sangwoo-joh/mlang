@@ -52,6 +52,14 @@ let typecheck_cmd =
   , Term.info "type" ~doc ~sdocs:Manpage.s_common_options ~exits ~man )
 
 
+let repl_cmd =
+  let doc = "Run Slang REPL." in
+  let exits = Term.default_exits in
+  let man = [`S Manpage.s_description; `P "REPL for Slang"; `Blocks common_help_secs] in
+  ( Term.(const Driver.repl $ common_opt_t)
+  , Term.info "repl" ~doc ~sdocs:Manpage.s_common_options ~exits ~man )
+
+
 let default_cmd =
   ( Term.(ret (const (fun _ -> `Help (`Pager, None)) $ common_opt_t))
   , Term.info "toplevel" ~version:"v0.1" ~doc:"toplevel for S language"

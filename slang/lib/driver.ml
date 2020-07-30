@@ -36,3 +36,8 @@ let typecheck level file =
   | t ->
       F.fprintf F.std_formatter "@[<hov 2>%a@]@." Typ.pp t ) ;
   if verbose then F.fprintf F.std_formatter "Type checking complete@."
+
+
+let repl level =
+  let verbose = is_verbose level in
+  Interpret.repl ~verbose
