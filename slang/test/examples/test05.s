@@ -1,7 +1,7 @@
 (* Polymorphic toy with imperatives *)
 
 
-let f = fn x -> malloc x in
+let f = fn x -> alloc x in
   let a = f 10 in
   let b = f "pl" in
   let c = f true in

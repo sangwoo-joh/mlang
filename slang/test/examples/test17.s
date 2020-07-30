@@ -6,10 +6,10 @@ in
   let i = 1 in
   let s = "hello world" in
   let b = true in
-  let l = malloc 10 in
+  let l = alloc 10 in
     (
       (foo i 2, foo s "bye world"),
-      (foo b false, foo l (malloc 20))
+      (foo b false, foo l (alloc 20))
     )
   end
   end

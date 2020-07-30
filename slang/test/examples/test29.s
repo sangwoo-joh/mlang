@@ -1,5 +1,5 @@
 let f = fn x -> fn y ->
   write (x = y)
 in
-(f (malloc 1)) (malloc 3)
+(f (alloc 1)) (alloc 3)
 end
