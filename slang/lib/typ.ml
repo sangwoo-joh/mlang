@@ -1,6 +1,10 @@
+open Core
 module F = Format
 
+type id = string [@@deriving compare, equal]
+
 type t =
+  | TVar of id  (** Type variable *)
   | TInt  (** integer type *)
   | TBool  (** boolean type *)
   | TString  (** string type *)
@@ -13,6 +17,8 @@ type t =
 exception TypeError of string
 
 let rec pp fmt = function
+  | TVar id ->
+      F.fprintf fmt "'%s" id
   | TInt ->
       F.fprintf fmt "int"
   | TBool ->
