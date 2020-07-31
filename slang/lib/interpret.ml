@@ -14,8 +14,6 @@ module Loc = struct
   let pp fmt t = F.fprintf fmt "%#x" t
 end
 
-[@@@warning "-37"]
-
 module rec Env : sig
   type t
 
