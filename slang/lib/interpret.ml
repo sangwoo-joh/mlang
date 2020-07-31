@@ -14,6 +14,7 @@ module Loc = struct
   let pp fmt t = F.fprintf fmt "%#x" t
 end
 
+(** environment (stack) *)
 module rec Env : sig
   type t
 
@@ -211,6 +212,7 @@ end = struct
         raise (Typ.TypeError (F.asprintf "Not a closure: %a@." pp v))
 end
 
+(** memory *)
 module Memory = struct
   include Hashtbl.Make (Loc)
 
